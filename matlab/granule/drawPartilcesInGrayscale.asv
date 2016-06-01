@@ -1,0 +1,51 @@
+function drawPartilcesInGrayscale (results)
+
+% draw the plot for the results
+
+%
+sys.X = results.sizeX;
+sys.Y = sys.X;
+
+% get the current iteration number
+itern = results.iteration.variable(1).value(results.iteration.current); %number
+iteration = sprintf('%08d', itern); %string
+
+% get either the solute or solid concentration
+fn = results.directory;
+
+
+
+
+% draw the particles if selected
+fn = [results.directory '/particles/iteration' iteration '.txt'];
+bacteria = load(fn, 'ascii');
+
+%draw the particles
+[m, n] = size(bacteria);
+for i = 1:m,
+    x = bacteria(i, 2);
+    y = bacteria(i, 1);
+    rcore = bacteria(i, 4);
+    color = [bacteria(i, 5)/255, bacteria(i, 6)/255, bacteria(i, 7)/255];
+    
+    
+    
+    rcapsule = bacteria(i, 8);
+    colorcapsule =...
+        [bacteria(i, 9)/255, bacteria(i, 10)/255, bacteria(i, 11)/255];
+    %draw capsule
+    rectangle('Curvature', [1 1], 'Position',...
+        [x-rcapsule y-rcapsule 2*rcapsule 2*rcapsule],...
+        'FaceColor', colorcapsule, 'LineStyle', 'none');
+    %draw core
+    if (rcore > 0),
+        rectangle('Curvature', [1 1], 'Position',...
+            [x-rcore y-rcore 2*rcore 2*rcore],...
+            'FaceColor', color, 'LineStyle', 'none');
+    end;
+end;
+
+axis equal tight;
+axis xy;
+set(gca, 'YLim', [0 sys.Y], 'YTick', []);
+set(gca, 'XLim', [0 sys.X], 'XTick', []);

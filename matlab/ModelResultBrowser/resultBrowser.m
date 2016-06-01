@@ -1,0 +1,389 @@
+function varargout = resultBrowser(varargin)
+% RESULTBROWSER M-file for resultBrowser.fig
+%      RESULTBROWSER, by itself, creates a new RESULTBROWSER or raises the
+%      existing
+%      singleton*.
+%
+%      H = RESULTBROWSER returns the handle to a new RESULTBROWSER or the handle to
+%      the existing singleton*.
+%
+%      RESULTBROWSER('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in RESULTBROWSER.M with the given input arguments.
+%
+%      RESULTBROWSER('Property','Value',...) creates a new RESULTBROWSER or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before resultBrowser_OpeningFunction gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to resultBrowser_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Edit the above text to modify the response to help resultBrowser
+
+% Last Modified by GUIDE v2.5 14-Feb-2007 08:37:03
+
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @resultBrowser_OpeningFcn, ...
+                   'gui_OutputFcn',  @resultBrowser_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin & isstr(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+
+% --- Executes just before resultBrowser is made visible.
+function resultBrowser_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to resultBrowser (see VARARGIN)
+
+global resultData;
+
+% Choose default command line output for resultBrowser
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+% This sets up the initial plot - only do when we are invisible
+% so window can get raised using resultBrowser.
+if strcmp(get(hObject,'Visible'),'off')
+    plot(rand(5));
+else
+    resultData = getResultsFromDirectory('.');
+
+    % update all ui components
+    updateUiComponents(handles, resultData);
+end
+
+
+% UIWAIT makes resultBrowser wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = resultBrowser_OutputFcn(hObject, eventdata, handles)
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+% --- Executes on button press in browsePushButton.
+function browsePushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to browsePushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% update structure with new directory
+resultData = getResultsFromDirectory(mypath)
+% update all ui components
+updateUiComponents(handles, resultData);
+
+
+axes(handles.axes1);
+cla;
+
+popup_sel_index = get(handles.solidsPopupMenu, 'Value');
+switch popup_sel_index
+    case 1
+        plot(rand(5));
+    case 2
+        plot(sin(1:0.01:25));
+    case 3
+        comet(cos(1:.01:10));
+    case 4
+        bar(1:10);
+    case 5
+        plot(membrane);
+    case 6
+        surf(peaks);
+end
+
+
+% --------------------------------------------------------------------
+function FileMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to FileMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function SelectDirectoryMenuItem_Callback(hObject, eventdata, handles)
+% hObject    handle to OpenMenuItem (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+if isempty(resultData),
+    resultData.directory = pwd;
+end;
+dir = uigetdir(resultData.directory, 'Select the directory wih results');
+% update structure with new directory
+resultData = getResultsFromDirectory(dir);
+% update all ui components
+updateUiComponents(handles, resultData);
+
+% --------------------------------------------------------------------
+function PrintMenuItem_Callback(hObject, eventdata, handles)
+% hObject    handle to PrintMenuItem (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+printdlg(handles.figure1)
+
+% --------------------------------------------------------------------
+function CloseMenuItem_Callback(hObject, eventdata, handles)
+% hObject    handle to CloseMenuItem (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+selection = questdlg(['Close ' get(handles.figure1,'Name') '?'],...
+                     ['Close ' get(handles.figure1,'Name') '...'],...
+                     'Yes','No','Yes');
+if strcmp(selection,'No')
+    return;
+end
+
+delete(handles.figure1)
+
+
+% --- Executes during object creation, after setting all properties.
+function solidsPopupMenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to flowPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+
+
+
+% --- Executes during object creation, after setting all properties.
+function directoryTextEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to directoryTextEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+
+
+function directoryTextEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to directoryTextEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+% --- Executes on button press in showParticlesCheckBox.
+function showParticlesCheckBox_Callback(hObject, eventdata, handles)
+% hObject    handle to showParticlesCheckBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.particles = get(handles.showParticlesCheckBox, 'Value');
+% update all ui components
+updateUiComponents(handles, resultData);
+
+
+% --- Executes on button press in solidsRadioButton.
+function solidsRadioButton_Callback(hObject, eventdata, handles)
+% hObject    handle to solidsRadioButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.solids.show = get(handles.solidsRadioButton, 'Value');
+if (resultData.solids.show)
+    resultData.solutes.show = false;
+    resultData.flow.show = false;
+    % update all ui components
+    updateUiComponents(handles, resultData);
+end
+
+% --- Executes on button press in solutesRadioButton.
+function solutesRadioButton_Callback(hObject, eventdata, handles)
+% hObject    handle to solutesRadioButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.solutes.show = get(handles.solutesRadioButton, 'Value');
+if (resultData.solutes.show)
+    resultData.solids.show = false;
+    resultData.flow.show = false;
+    % update all ui components
+    updateUiComponents(handles, resultData);
+end;
+% --- Executes on button press in solutesRadioButton.
+function flowRadioButton_Callback(hObject, eventdata, handles)
+% hObject    handle to solutesRadioButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.flow.show = get(handles.flowRadioButton, 'Value');
+if (resultData.flow.show)
+    resultData.solutes.show = false;
+    resultData.solids.show = false;
+    % update all ui components
+    updateUiComponents(handles, resultData);
+end;
+
+% --- Executes on button press in previousIterationPushButton.
+function previousIterationPushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to previousIterationPushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.iteration.current = resultData.iteration.current-1;
+    
+% update all ui components
+updateUiComponents(handles, resultData);
+
+
+% --- Executes on button press in nextIterationPushButton.
+function nextIterationPushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to nextIterationPushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.iteration.current = resultData.iteration.current+1;
+    
+% update all ui components
+updateUiComponents(handles, resultData);
+
+
+% --- Executes during object creation, after setting all properties.
+function iterationEditText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to iterationEditText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+function iterationEditText_Callback(hObject, eventdata, handles)
+% hObject    handle to iterationEditText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+try,
+    inew = find(resultData.iteration.variable(1).value ==...
+        str2num(get(handles.iterationEditText, 'String')));
+    if (length(inew) == 1)
+        resultData.iteration.current = inew;
+    end;
+catch,
+end;
+    
+% update all ui components
+updateUiComponents(handles, resultData);
+
+
+
+% --- Executes on selection change in solutesPopupMenu.
+function solutesPopupMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to solutesPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns solutesPopupMenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from solutesPopupMenu
+
+global resultData;
+resultData.solutes.current = get(handles.solutesPopupMenu, 'Value');
+% update all ui components
+updateUiComponents(handles, resultData);
+
+% --- Executes on selection change in solidsPopupMenu.
+function solidsPopupMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to flowPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.solids.current = get(handles.solidsPopupMenu, 'Value');
+% update all ui components
+updateUiComponents(handles, resultData);
+
+% --- Executes on selection change in flowPopupMenu.
+function flowPopupMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to flowPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global resultData;
+
+resultData.flow.current = get(handles.flowPopupMenu, 'Value');
+% update all ui components
+updateUiComponents(handles, resultData);
+
+% --- Executes during object creation, after setting all properties.
+function solutesPopupMenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to solutesPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+% --- Executes during object creation, after setting all properties.
+function flowPopupMenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to flowPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+
+% --- Executes on button press in createFigureButton.
+function createFigureButton_Callback(hObject, eventdata, handles)
+% hObject    handle to createFigureButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global resultData;
+
+figure;
+drawResults (gca, resultData);
+
+
+

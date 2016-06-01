@@ -1,0 +1,23 @@
+% scStability - stability analysis of the quadratic equation
+
+x1 = 0:0.01:10;
+y1 = x1;
+
+[x,y] = meshgrid(x1,y1);
+
+condition = -4*x.^2 - 4*y.^2 + 4*x.*y + 8;
+
+figure(1);
+cs = contour(x, y, condition);
+title('Stability domain for solving the qadratic equation');
+xlabel('tx/tf');
+ylabel('ty/tf');
+clabel(cs);
+axis([0, 2, 0, 2]);
+
+z1 = 0.5*y1 + sqrt(2-3/4*y1.*y1);
+z2 = 0.5*y1 - sqrt(2-3/4*y1.*y1);
+
+figure(2);
+plot(x1, z1, 'b-', x1, z2, 'r-');
+axis([0, 2, 0, 2]);

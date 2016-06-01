@@ -1,0 +1,8 @@
+function dy = nConversions(t, y)
+
+KNH4 = 2.4;
+KNO2 = 
+
+dy(1) = -C1 * y(1) / (y(1) + KNH4);
+dy(3) = C2 * y(2) / (y(2) + KNO2);
+dy(2) = - dy(1) - dy(3) ;

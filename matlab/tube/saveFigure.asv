@@ -1,0 +1,18 @@
+function [] = saveFigure(fig, fn, tmpdir)
+
+%save
+figure(fig);
+imFile = [tmpdir 'tmp.tif'];
+print('-dtiff', '-r300', imFile);
+% open image and resize it
+im = imread(imFile);
+
+MROWS = size(im, 1);
+MCOLS = size(im, 1);
+686
+293
+imSmall = imresize(im, 0.2, 'bilinear');
+imwrite(imSmall, fn, 'png');
+delete(imFile);
+%
+close(fig);

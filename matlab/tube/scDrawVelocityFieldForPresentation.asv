@@ -1,0 +1,68 @@
+% draw a plot with solute field and balls
+
+%baseDir = 'C:\Documents and Settings\xavier\Desktop\results\tube';
+baseDir = 'E:\jxavier\results\TubeTest2';
+
+
+% construct the results data structure
+results = getResultsFromDirectory(baseDir);
+
+
+%select variable to plot
+results.solutes.show = 0;
+results.solids.show = 0;
+results.flow.show = 1;
+
+scale_velocity = 2.7778e-07; %converts um/h to m/s
+max_min_velocity = [0 6];
+
+scale_shear = 1e-12/(3600^2); %converts 1e-15g/um/h to kg/m/s
+max_min_shear = [0 0.008];
+%max_min_shear = [0 0.025];
+
+
+%create the subdirectory to save
+mkdir(baseDir, 'frames');
+
+for i = 137:137
+    disp(sprintf('creating %d of %d', i, length(results.iteration.variable(1).value)));
+    % first change the current iteration
+    results.iteration.current = i;
+    %get the time
+    t = results.iteration.variable(2).value(i);
+    figure(1);
+    set(gcf, 'Position', [125   319   549   470], 'Color', [1 1 1],...
+        'PaperPositionMode', 'auto');
+    %draw velocity
+    results.flow.current = 2;
+    drawNormalizedVelocity (gca, results, max_min_velocity, scale_velocity);
+    title('Velocity field [mm.s^{-1}]');
+    xlabel(sprintf('time %0.1f day', t/24));
+    %draw shear
+    results.flow.current = 1;
+    figure(2);
+    set(gcf, 'Position', [125   319   549   470], 'Color', [1 1 1],...
+        'PaperPositionMode', 'auto');
+    drawNormalizedVelocity (gca, results, max_min_shear, scale_shear);
+    title('Shear stress [N.m^{-2}]');
+    xlabel(sprintf('time %0.1f day', t/24));
+    load shearColorMap;
+    colormap(shearColorMap);
+    
+    %save
+    saveFigure(1, sprintf('%s\\frames\\flow%06d.png',baseDir, i));
+    print('-dpng', '-r300',...
+        sprintf('%s\\frames\\flow%06d.png',baseDir, i));
+    imFile = sprintf('%s\\frames\\flow%06d.tif',baseDir, i);
+    print('-dtiff', '-r300',...
+        imFile);
+    % close the figure
+    % open image and resize it
+    im = imread(imFile);
+    imSmall = imresize(im, 0.3, 'bilinear');
+    imwrite(imSmall,...
+        sprintf('%s\\frames\\flow%06d.png',baseDir, i), 'png');
+    delete(imFile);
+    %
+    close 1;
+end;

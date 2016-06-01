@@ -1,0 +1,14 @@
+% scMovieMaker2
+
+basedir = 'D:\results\';
+
+data(1).dirName = [basedir 'drg-detachment-eps\umax5.47E-01kdet1.00E-03kd_eps1.40E-03ki1.00E-03'];
+data(2).dirName = [basedir 'drg-detachment-eps-limitation\umax5.47E-01kdet1.00E-03keps5.00E01ki1.00E-03'];
+
+for i = 1:length(data),
+    makeMovie(data(i).dirName);
+end;
+
+
+
+

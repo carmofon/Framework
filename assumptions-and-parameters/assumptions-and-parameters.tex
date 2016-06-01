@@ -1,0 +1,93 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}
+\geometry{letterpaper}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+
+\title{ABM tumor model assumptions and parameters}
+\author{Will Chang}
+
+\begin{document}
+	
+	\maketitle{Assumptions, parameters, and reduced parameters for the ABM tumor model and its analytical approximation.}
+	
+	\section{Assumptions}
+		\begin{flushleft}
+			\begin{itemize}
+				\item No oxygen dependence. \\
+				\item Cell growth depends on growth signal with half-saturation constant \(K_s\). \\
+				\item Bulk concentration of growth signal is constant. \\
+				\item Diffusion of solute (growth signal) is physically modeled. \\
+				\item Cells grow to a maximum radius then divide. \\
+				\item Begin with only cheaters, with probability of mutation to cooperator upon division equal to \(\lambda\). There is no mutation from cooperator to cheater. \\
+				\item Cooperators produce growth signal at a rate \(R_s\) and cost \(c\). \\
+				\item Cells at edges of tumor detach from the main tumor mass at rate proportional to \(r^2\) where r is the distance to the center of the simulation space. This simulates detachment of cells to form metastases and death due to distance from the initial location of tumorigenesis with favorable growth conditions. Detachment coefficient is the constant \(R_{det}\). \\
+				\item Cells push each other so as not to overlap. \\
+			\end{itemize}
+		\end{flushleft}
+	
+	\section{Homogenous steady-state approximation assumptions}
+		\begin{flushleft}
+			\begin{itemize}
+				\item Cooperator and cheater biomass are well-mixed and constant across the tumor radius. This is most accurate when there is only one cell type.\\
+				\item Growth signal concentration is constant across the tumor. This is most accurate when \(S_0\) is very high relative to \(K_s\), and signal diffusivity is high, meaning signal concentration inside the tumor is roughly equal to the bulk signal concentration. However, if cells in the tumor core are experiencing approximately bulk signal concentration, if the ratio of tumor biomass density \(:\) cell biomass density \(<\) 1 (tumor area not fully covered by biomass), the surface area (perimeter in 2D model) of the tumor in contact with growth signal will be greater than predicted in the homogenous approximation. Thus, the homogenous approximation will underestimate the steady-state tumor radius.\\
+				\item Steady-state tumor radius reflects tumor size at which growth rate is exactly equal to detachment rate. \\
+			\end{itemize}
+		\end{flushleft}
+
+	\newpage
+	\section{ABM model parameters}
+		\begin{center}
+			\renewcommand{\arraystretch}{2}
+			\begin{table}[h]
+				\caption{These are the dimensioned physical parameters used in the simulations.}
+				\begin{tabular}{c | c | c }
+					\(\mu_{max}\) & max growth rate & \([T^{-1}]\) \\
+					\(c\) & signal production cost & dimensionless \\
+					\(D\) & signal diffusion coeff. & \([L^2T^{-1}]\) \\
+					\(\rho\) & biomass density & \([ML^{-2}]\) if 2D, \([ML^{-3}]\) if 3D \\
+					\(h\) & boundary layer thickness & \([L]\) \\
+					\(S_0\) & bulk signal concentration & \([ML^{-3}]\) \\
+					\(K_s\) & growth with signal half-saturation constant & \([ML^{-3}]\) \\
+					\(\lambda\) & mutation rate & \([T^{-1}]\) \\
+					\(R_s\) & signal production rate coeff. & \([T^{-1}]\) \\
+					\(R_{det}\) & detachment rate coeff. & \([ML^{-3}T{-1}]\) (r-square detachment)\\
+					\(Y_s\) & yield of biomass produced per signal consumed & dimensionless \\
+					\(Q\) & ext. mass transfer rate \( \equiv D/h^2 \) & \([T^{-1}]\) \\
+				\end{tabular}
+			\end{table}
+		\end{center}
+	
+	\newpage
+	\section{Reduced parameters for the analytical approximation}
+		\begin{center}
+			\begin{table}[h]
+				\caption{Reduced parameters: these are dimensionless.}
+				\renewcommand{\arraystretch}{4}
+				\begin{tabular}{c | c | c}
+					Reduced parameter & Expression & Interpretation \\
+					\hline 
+					\(\alpha\) & \(\dfrac{R_s\rho}{2QS_0}\) & ratio of signal synthesis to external transfer \\
+					\(\beta\) & \(\dfrac{\rho\mu_{max}}{2QS_0Y_s}\) & ratio of signal consumption to external transfer \\
+					\(\gamma\) & \(\dfrac{R_{det}h}{\mu_{max}\rho}\) & ratio of detachment to max growth; sets max radius \\
+					\(\delta\) & \(\dfrac{cR_s}{\mu_{max}} \)& ratio of signal synthesis cost to growth \\
+					\(\epsilon\) & \(\dfrac{\lambda}{\mu_{max}}\) & relative mutation rate vs. max growth rate \\
+				\end{tabular}
+			\end{table}
+		\end{center}
+		\begin{flushleft}
+			\(\delta\) and \(\epsilon\) set the steady-state cooperator fraction under the analytical approximation... \\
+		\end{flushleft}
+		\begin{center}
+			\[
+			f_{hss} = \dfrac{\epsilon}{\delta}
+			\]
+		\end{center}
+
+	
+
+\end{document}

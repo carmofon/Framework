@@ -1,0 +1,7 @@
+function numericalSim(tspan)
+
+% Set initial 
+f_ini = 0;
+r_ini = 1e-4;
+
+[t, y] = 

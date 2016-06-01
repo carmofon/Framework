@@ -1,0 +1,54 @@
+% scRemovalAnalysis.m - Plot the main state variables from a
+% simulation of 2D granule growing
+
+% add main functions directory to path
+basedir = 'D:\joao';
+resultPath = [basedir '/results'];
+
+
+% the simulation results file to read
+simulation(1).dirName =...
+    [resultPath '/FullAerobicDO100Precision0_01MaxF0_95'];
+simulation(1).matureStage = 150;
+simulation(2).dirName =...
+    [resultPath '/FullAerobicDO40Precision0_01MaxF0_95'];
+simulation(2).matureStage = 110;
+simulation(3).dirName =...
+    [resultPath '/AnaerobicFeedDO40Precision0_01MaxF0_95'];
+simulation(3).matureStage = 240;
+simulation(4).dirName =...
+    [resultPath '/AnaerobicFeedDO20Precision0_01MaxF0_95'];
+simulation(4).matureStage = 240;
+simulation(5).dirName =...
+    [resultPath '/AnaerobicFeedControlledDO40Precision0_01MaxF0_95'];
+simulation(5).matureStage = 240;
+
+for i = 1:length(simulation),
+    [nRemoval, fSnd, fAnd] = nRemovalAnalysis(simulation(i).dirName,...
+        simulation(i).matureStage);
+    simulation(i).nRemoval = nRemoval;
+    simulation(i).fSnd = fSnd;
+    simulation(i).fAnd = fAnd;
+end;
+
+%% draw the bar plot
+nRemovalBarPlot = [];
+for i = 1:length(simulation),
+    nRemoval = simulation(i).nRemoval;
+    fSnd = simulation(i).fSnd;
+    fAnd = simulation(i).fAnd;
+    nRemovalBarPlot = [nRemovalBarPlot;...
+        nRemoval*fSnd*100 nRemoval*fAnd*100];
+end;
+figure(1);
+set(1, 'Position', [360   651   524   273]);
+h = bar(nRemovalBarPlot,'stack');
+set(gca, 'XTickLabel',...
+    ['#1'; '#2'; '#3'; '#4'; '#5']);
+ylabel('N-Removal [%]');
+xlabel('Simulation');
+
+barWidth = 0.80;
+set(h(1), 'FaceColor', [0.3 0.3 0.3], 'BarWidth', barWidth); 
+set(h(2), 'FaceColor', 'none', 'BarWidth', barWidth); 
+legend(

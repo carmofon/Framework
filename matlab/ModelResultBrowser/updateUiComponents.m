@@ -1,0 +1,118 @@
+function updateUiComponents(handles, results)
+
+% update all ui components from the results structure
+
+if (results.validData),
+    % update the path text
+    set(handles.DirectoryNameText, 'String', ['results from directory ' results.directory]);
+
+    % turn all components on
+    set(handles.iterationEditText, 'Enable', 'on');
+    set(handles.previousIterationPushButton, 'Enable', 'on');
+    set(handles.nextIterationPushButton, 'Enable', 'on');
+    set(handles.showParticlesCheckBox, 'Enable', 'on');
+    set(handles.solidsRadioButton, 'Enable', 'on');
+    set(handles.solidsPopupMenu, 'Enable', 'on');
+    set(handles.solutesRadioButton, 'Enable', 'on');
+    set(handles.solutesPopupMenu, 'Enable', 'on');
+    set(handles.flowRadioButton, 'Enable', 'on');
+    set(handles.flowPopupMenu, 'Enable', 'on');
+
+    % the iteration number
+    set(handles.iterationEditText, 'String',...
+        num2str(results.iteration.variable(1).value(results.iteration.current)));
+    % the iteration browsing buttons
+    %previous
+    if (1 == results.iteration.current),
+        set(handles.previousIterationPushButton, 'Enable', 'off');
+    else
+        set(handles.previousIterationPushButton, 'Enable', 'on');
+    end;
+    %following
+    if (length(results.iteration.variable(1).value) == results.iteration.current),
+        set(handles.nextIterationPushButton, 'Enable', 'off');
+    else
+        set(handles.nextIterationPushButton, 'Enable', 'on');
+    end;
+
+    % show particles
+    if (results.particles),
+        set(handles.showParticlesCheckBox, 'Value',...
+            get(handles.showParticlesCheckBox, 'Max'));
+    else,
+        set(handles.showParticlesCheckBox, 'Value',...
+            get(handles.showParticlesCheckBox, 'Min'));
+    end;
+
+    % solids
+    if (results.solids.show),
+        set(handles.solidsRadioButton, 'Value',...
+            get(handles.solidsRadioButton, 'Max'));
+        set(handles.solidsRadioButton, 'Enable', 'off');
+        set(handles.solidsPopupMenu, 'Enable', 'on');
+    else,
+        set(handles.solidsRadioButton, 'Enable', 'on');
+        set(handles.solidsRadioButton, 'Value',...
+            get(handles.solidsRadioButton, 'Min'));
+        set(handles.solidsPopupMenu, 'Enable', 'off');
+    end;
+    % the pulldown menu
+    set(handles.solidsPopupMenu, 'String', results.solids.available);
+    set(handles.solidsPopupMenu, 'Value', results.solids.current);
+
+    % solutes
+    if (results.solutes.show),
+        set(handles.solutesRadioButton, 'Value',...
+            get(handles.solutesRadioButton, 'Max'));
+        set(handles.solutesRadioButton, 'Enable', 'off');
+        set(handles.solutesPopupMenu, 'Enable', 'on');
+    else,
+        set(handles.solutesRadioButton, 'Enable', 'on');
+        set(handles.solutesRadioButton, 'Value',...
+            get(handles.solutesRadioButton, 'Min'));
+        set(handles.solutesPopupMenu, 'Enable', 'off');
+    end;
+    % the pulldown menu
+    set(handles.solutesPopupMenu, 'String', results.solutes.available);
+    set(handles.solutesPopupMenu, 'Value', results.solutes.current);
+
+    % flow
+    %activate only if there are flow data
+    if(isfield(results.flow, 'available')),
+        if (results.flow.show),
+            set(handles.flowRadioButton, 'Value',...
+                get(handles.flowRadioButton, 'Max'));
+            set(handles.flowRadioButton, 'Enable', 'off');
+            set(handles.flowPopupMenu, 'Enable', 'on');
+        else,
+            set(handles.flowRadioButton, 'Enable', 'on');
+            set(handles.flowRadioButton, 'Value',...
+                get(handles.flowRadioButton, 'Min'));
+            set(handles.flowPopupMenu, 'Enable', 'off');
+        end;
+        % the pulldown menu
+        set(handles.flowPopupMenu, 'String', results.flow.available);
+        set(handles.flowPopupMenu, 'Value', results.flow.current);
+    else,
+            set(handles.flowRadioButton, 'Enable', 'off');
+            set(handles.flowPopupMenu, 'Enable', 'off');        
+    end;
+
+    % update the plot
+    drawResults (handles.axes1, results);
+else,
+    % update the path text
+    set(handles.DirectoryNameText, 'String', ['present directory ' results.directory]);
+
+    % turn all components off
+    set(handles.iterationEditText, 'Enable', 'off');
+    set(handles.previousIterationPushButton, 'Enable', 'off');
+    set(handles.nextIterationPushButton, 'Enable', 'off');
+    set(handles.showParticlesCheckBox, 'Enable', 'off');
+    set(handles.solidsRadioButton, 'Enable', 'off');
+    set(handles.solidsPopupMenu, 'Enable', 'off');
+    set(handles.solutesRadioButton, 'Enable', 'off');
+    set(handles.solutesPopupMenu, 'Enable', 'off');
+    set(handles.flowRadioButton, 'Enable', 'off');
+    set(handles.flowPopupMenu, 'Enable', 'off');
+end;

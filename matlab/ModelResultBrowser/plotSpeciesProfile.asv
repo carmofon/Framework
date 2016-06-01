@@ -1,0 +1,25 @@
+function [] = plotSpeciesProfile(results, varn, multiplier, haxes)
+
+axes(haxes);
+
+% get the system size (TODO later)
+sys.X = 500;
+sys.Y = sys.X;
+
+% get the concnetration matrix from the file
+data = readCurrentSpeciesData(results);
+
+% compute average profile
+dataProfile = mean(data,1);
+y = linspace(0, sys.X, length(dataProfile));
+
+hpl = plot(dataProfile, y, 'r-');
+set(hpl, 'LineWidth', 1);
+hxl = xlabel(['[kg/m^3]']);
+hx2 = ylabel(['[kg/m^3]']);
+set(hxl, 'FontSize', 8);
+hyl = ylabel(results.iteration.variable(varn).name);
+set(hyl, 'FontSize', 8);
+set(haxes, 'YLim', [min(vars) max(vars)]);
+set(haxes, 'XLim', [min(times) max(times)]);
+set(haxes, 'FontSize', 5);

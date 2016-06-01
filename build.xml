@@ -1,0 +1,74 @@
+<!-- Requires that both the ant and ant-contrib softwares are installed
+	and the ANT_HOME JAVA_HOME and PATH environmental variables. For example:
+		export ANT_HOME=/home/jxavier/java/apache-ant-1.6.5
+		export JAVA_HOME=/home/jxavier/java/jdk1.5.0_04
+		export PATH=${PATH}:${ANT_HOME}/bin
+	may be included in the .bash_profile
+ -->
+
+<project name="Framework" default="dist" basedir=".">
+	<description>
+        Complete build of the framework for biofilm modelling
+    </description>
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+	<path id="classpath">
+		<pathelement path="${classpath}" />
+		<fileset dir="jfreechart/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="jfreechart">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${build}" />
+	</target>
+
+
+	<target name="compile" depends="init">
+		<foreach target="javac" param="file">
+			<path>
+				<fileset dir="${src}">
+					<include name="**/*.java" />
+
+				</fileset>
+			</path>
+		</foreach>
+	</target>
+
+	<!-- Requires the ant-contrib -->
+	<target name="javac">
+		<echo>Trying to compile ${file}</echo>
+		<basename property="file.name" file="${file}" />
+		<javac srcdir="${src}" 
+			destdir="${build}" 
+			failonerror="false" 
+			classpathref="classpath"
+			debug="true" 
+			debuglevel="lines,vars,source">
+			<include name="**/${file.name}" />
+		</javac>
+	</target>
+
+	<target name="dist" depends="compile" description="generate the distribution">
+		<!-- Create the distribution directory -->
+		<mkdir dir="${dist}/lib" />
+
+		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+		<jar jarfile="${dist}/lib/framework.jar" basedir="${build}" />
+	</target>
+
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+</project>

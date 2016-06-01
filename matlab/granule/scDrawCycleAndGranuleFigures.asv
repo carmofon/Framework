@@ -1,0 +1,13 @@
+
+
+simulation(1).name = 'FullAerobicDO100Precision0_01MaxF0_95';
+simulation(2).name = 'FullAerobicDO40Precision0_01MaxF0_99';
+simulation(3).name = 'AnaerobicFeedDO40Precision0_01MaxF0_99';
+simulation(4).name = 'AnaerobicFeedDO20Precision0_01MaxF0_99';
+simulation(5).name = 'AnaerobicFeedControlledDO40Precision0_01MaxF0_99';
+
+%for i = 1:length(simulation),
+for i = 5:5,
+    figure(i);
+    createGranuleAndCycleFigure(simulation(i).name);
+end;

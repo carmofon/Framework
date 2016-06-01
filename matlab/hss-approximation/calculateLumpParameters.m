@@ -1,0 +1,38 @@
+%{
+Calculate lump parameters from model parameters using the homogenous
+steady state approximation.
+%}
+
+function [Alpha, Beta, Gamma, Delta, Epsilon] = calculateLumpParameters(x)
+
+if isempty(x) == 1
+    % Apply default values
+    x = [0.01, 3000, 5.76e-6, 100, 1e-6, ...
+        0.45, 0.1, 0.3, 3.5e-5, 1e-5, 0.03];
+elseif length(x) ~= 11
+    error(['Specify 11 parameters in input vector! ' ...
+        '[Rs rho Ds h S0 Ys muMax c Ks Rdet lambda]'])
+end
+
+% Model parameter values.
+Rs = x(1);                  % 1/h
+rho = x(2);                 % g/L
+Ds = x(3);                  % um^2/h
+h = x(4);                   % um
+S0 = x(5);                  % g/L
+Ys = x(6);                  % dimensionless
+muMax = x(7);               % 1/h
+c = x(8);                   % dimensionless
+Ks = x(9);                  % g/L
+Rdet = x(10);               % g/(um^3 * h)
+lambda = x(11);             % 1/h
+
+Q = Ds / h^2;
+k = Ks / S0;
+
+% Calculate dimensionless lump parameters.
+Alpha = (Rs * rho) / (2 * Q * S0);
+Beta = (rho * muMax) / (2 * Q * S0 * Ys);
+Gamma = (Rdet * h) / (muMax * rho);
+Delta = (c * Rs) / muMax;
+Epsilon = lambda / muMax;

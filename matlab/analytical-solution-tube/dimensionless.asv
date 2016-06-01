@@ -1,0 +1,7 @@
+%dimensionless
+
+syms rf rd sh d1 d2;
+eq1 = rd - sqrt(rf-d2/rf);
+eq2 = (rf^2-rd^2)*(1-2/sh/rf)+log(rd/rf)-d1;
+
+[rf, rd] = solve(eq1, eq2, rf, rd);

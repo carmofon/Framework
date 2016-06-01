@@ -1,0 +1,57 @@
+% scDrawFigure2
+
+baseDir = 'D:\joao\sloughing-paper';
+dirOut = [baseDir '\figs_temp\'];
+
+% load the workspace with estimated values
+load field_2;
+
+% get the values with maximum likelihood
+Lmaximum = L(L == max(L(:)));
+alphaEstimated = alphaGrid(L == max(L(:)));
+muEstimated = muGrid(L == max(L(:)));
+
+%
+thresh = -300;
+L(L < thresh) = thresh;
+figure(2);
+set(2, 'Position', [40 643 811 281], 'PaperPositionMode', 'auto');
+
+subplot(1, 2, 1);
+contourf(muGrid, alphaGrid, L, 25);
+%surf(muGrid, alphaGrid, L);
+xlabel('\mu');
+ylabel('\alpha');
+set(gca, 'XScale', 'log', 'YScale', 'log');
+colorbar;
+colormap gray;
+%shading interp;
+hold on;
+%h = plot3(muEstimated, alphaEstimated, Lmaximum, 'kp');
+h = plot(muEstimated, alphaEstimated, 'kp');
+set(h, 'MarkerEdgeColor', [0 0 0],...
+    'MarkerFaceColor', [1 1 1], 'MarkerSize', 10, 'LineWidth', 1);
+set(gca, 'XTick', [0.1 0.25 0.5]);
+
+subplot(1, 2, 2);
+params.mu = muEstimated;
+params.xMax = 3.5;
+params.b = params.mu / params.xMax;
+params.alpha = alphaEstimated;
+params.integrationStepsNumber = 100;
+params.integrationStepSize = 1/params.integrationStepsNumber;
+params.samplingStepSize = 1;
+params.kernelWidth = 0.1;
+[pdf, xf] = probabilityDesityFucntion(1.5, params);
+plot(xf, pdf, 'k-');
+xlabel('X_{n+1}');
+ylabel('p(X_{n+1}|X_{n} = 1.5)');
+
+print('-depsc', [dirOut 'fig2.eps']);
+
+cs = cumsum(pdf);
+total = cs(end);
+lowerhalf = xf(find(cs < (total*0.5)));
+
+disp(sprintf('E(X) = %f, most probable = %f',...
+    lowerhalf(end), xf(pdf == max(pdf))));

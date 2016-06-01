@@ -1,0 +1,23 @@
+% scPlotRoughness
+
+% get the system size (TODO later)
+sys.X = 500;
+sys.Y = sys.X;
+
+basedir = 'D:\results\drg\';
+
+data(1).dirName = [basedir 'umax5.47E00'];
+data(2).dirName = [basedir 'umax5.47E01'];
+data(3).dirName = [basedir 'umax5.47E-01'];
+data(4).dirName = [basedir 'umax5.47E-02'];
+data(5).dirName = [basedir 'umax5.47E-03'];
+
+for i = 1:length(data),
+    results = getResultsFromDirectory(data(i).dirName);
+    for j = 1:length(results.iteration.variable(1).value),
+        iteration = num2str(j);
+        fn = [data(i).dirName '\biofilmFront\iteration' iteration '.txt'];
+        biomass = load(fn, 'ascii'); 
+        front = 
+    end;
+end;

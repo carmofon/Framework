@@ -1,0 +1,7 @@
+% scPdfOfAlphaFunction
+
+% Determine the probability density of the the alpha function
+
+% generate values using mote carlo
+
+x = 1 - pa

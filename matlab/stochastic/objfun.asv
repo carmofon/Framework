@@ -1,0 +1,9 @@
+function  f = objfun(x)
+
+% the function to minimize, i.e. -L
+
+params.mu    = x(1);
+params.b  = x(2);
+params.alpha = 500;
+
+f = exp(x(1))*(4*x(1)^2+2*x(2)^2+4*x(1)*x(2)+2*x(2)+1);

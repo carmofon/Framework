@@ -1,0 +1,179 @@
+function [nRemoval] = nRemovalAnalysis(dirName) 
+
+
+% add main functions directory to path
+addpath('../ModelResultBrowser');
+
+% read the results file
+results = getResultsFromDirectory(dirName);
+
+% recover the variables
+iteration = results.iteration.variable(1).value;
+time = results.iteration.variable(2).value;
+realTime = results.iteration.variable(3).value;
+biovolume = results.iteration.variable(4).value;
+runLengthX = results.iteration.variable(5).value;
+runLengthY = results.iteration.variable(6).value;
+runLengthZ = results.iteration.variable(7).value;
+detachedBiomass = results.iteration.variable(8).value;
+erodedBiomass = results.iteration.variable(9).value;
+sloughedBiomass = results.iteration.variable(10).value;
+producedBiomass = results.iteration.variable(11).value;
+biomass = results.iteration.variable(12).value;
+oxygen = results.iteration.variable(13).value;
+oxygenRate = results.iteration.variable(14).value;
+ammonium = results.iteration.variable(15).value;
+ammoniumRate = results.iteration.variable(16).value;
+nitrite = results.iteration.variable(17).value;
+nitriteRate = results.iteration.variable(18).value;
+nitrate = results.iteration.variable(19).value;
+nitrateRate = results.iteration.variable(20).value;
+substrate = results.iteration.variable(21).value;
+substrateRate = results.iteration.variable(22).value;
+phosphate = results.iteration.variable(23).value;
+phosphateRate = results.iteration.variable(24).value;
+activeNH = results.iteration.variable(25).value;
+inertNH = results.iteration.variable(26).value;
+activeNO = results.iteration.variable(27).value;
+inertNO = results.iteration.variable(28).value;
+activeH = results.iteration.variable(29).value;
+inertH = results.iteration.variable(30).value;
+activePAO = results.iteration.variable(31).value;
+phbPAO = results.iteration.variable(32).value;
+polypPAO = results.iteration.variable(33).value;
+glycogenPAO = results.iteration.variable(34).value;
+inertPAO = results.iteration.variable(35).value;
+
+totalInert = inertNH + inertNO + inertH + inertPAO;
+timeDay = time/24;
+
+iterationToShowIndex = unique(iteration(find(mod(time, 15) == 0)));
+
+
+% find the indexes for the begining and end of the cycles
+beginCycleTimes = 0:3:time(end);
+[uniqueTime, iUT, jUT] = unique(time);
+
+
+%end indexes
+estimatedEndIndexes =...
+    interp1(uniqueTime, iUT, beginCycleTimes(2:end) - 0.001, 'linear') ;
+
+endOfCycleIndex = round(estimatedEndIndexes);
+
+%begining indexes
+estimatedBeginIndexes =...
+    interp1(uniqueTime, iUT, beginCycleTimes + 0.001, 'linear') ;
+
+beginCycleIndex = ceil(estimatedBeginIndexes);
+beginCycleIndex = beginCycleIndex(1:end-1);
+
+% create a command to format each of the subplots
+plotFormat = ['set(gca,',...
+    ' ''Color'', [0 0 0],',...
+    ' ''XLim'', rangeToPlot,',...
+    ' ''XColor'', [1 1 1],',...
+    ' ''YColor'', [1 1 1])'];
+
+substrateColor = [0 0 1];
+oxygenColor = [1 1 1];
+ammoniumColor = [0 1 0];
+nitriteColor = [1 1 0];
+nitrateColor = [0 0.5 0];
+phosphateColor = [1 0 0];
+
+activePAOColor = phosphateColor;
+phbPAOColor = [0 0.5 0];
+polypPAOColor = [1 1 1];
+glycogenPAOColor = [0 1 1];
+totalInertColor = [0.5 0.5 0.5];
+activeNHColor = ammoniumColor;
+activeNOColor = nitriteColor;
+activeHColor = substrateColor;
+
+%% analysis of nitrification / desnitrification
+ammoniumRate = results.iteration.variable(16).value * 1.5558e-8/3;
+nitriteRate = results.iteration.variable(18).value* 1.5558e-8/3;
+nitrateRate = results.iteration.variable(20).value* 1.5558e-8/3;
+
+nitrification = - ammoniumRate;
+denitrification = - ammoniumRate - nitriteRate - nitrateRate;
+% simultaneous nitrification/denitrification
+snd = denitrification;
+snd(denitrification > nitrification) = 0; 
+and = denitrification;
+and(denitrification < nitrification) = 0; 
+
+nRemovalBySnd = sum(snd(1:end-1).*diff(time));
+nRemovalByAnd = sum(and(1:end-1).*diff(time));
+nRemovalTotal = nRemovalBySnd + nRemovalByAnd;
+fSnd = nRemovalBySnd/nRemovalTotal;
+fAnd = nRemovalByAnd/nRemovalTotal;
+disp(sprintf('N-removal: %0.2f SND, %0.2f AND\n', fSnd, fAnd)); 
+
+
+
+%% Analysis of steady state
+
+%----------------Define the maturation stage start
+startOfMaturation = 240;
+disp(sprintf('start of maturation = %d day', startOfMaturation));
+
+%------- Average granule composition
+matureStateIndexes = find(time > startOfMaturation*24);
+activeNHAverage = mean(activeNH(matureStateIndexes));
+activeNOAverage = mean(activeNO(matureStateIndexes));
+activeHAverage = mean(activeH(matureStateIndexes));
+activePAOAverage = mean(activePAO(matureStateIndexes));
+phbPAOAverage = mean(phbPAO(matureStateIndexes));
+polypPAOAverage = mean(polypPAO(matureStateIndexes));
+glycogenPAOAverage = mean(glycogenPAO(matureStateIndexes));
+totalInertAverage = mean(totalInert(matureStateIndexes));
+
+total = activeNHAverage + activeNOAverage + activeHAverage +...
+    activePAOAverage + phbPAOAverage + polypPAOAverage + totalInertAverage;
+
+activeNHFraction = activeNHAverage/total;
+activeNOFraction = activeNOAverage/total;
+activeHFraction = activeHAverage/total;
+activePAOFraction = activePAOAverage/total;
+phbPAOFraction = phbPAOAverage/total;
+polypPAOFraction = polypPAOAverage/total;
+glycogenPAOFraction = glycogenPAOAverage/total;
+totalInertFraction = totalInertAverage/total;
+
+disp(sprintf('activeNH = %0.1f', activeNHFraction *100));
+disp(sprintf('activeNO = %0.1f', activeNOFraction *100));
+disp(sprintf('activeH = %0.1f', activeHFraction *100));
+disp(sprintf('activePAO = %0.1f', activePAOFraction *100));
+disp(sprintf('phbPAO = %0.1f', phbPAOFraction *100));
+disp(sprintf('polyPPAO = %0.1f', polypPAOFraction *100));
+disp(sprintf('glycogenPPAO = %0.1f', glycogenPAOFraction *100));
+disp(sprintf('totalInert = %0.1f\n', totalInertFraction *100));
+
+%------- Analysis of removal
+endOfCycleIndexMature =...
+    endOfCycleIndex(endOfCycleIndex > matureStateIndexes(1));
+ammoniumEffluent = mean(ammonium(endOfCycleIndexMature));
+nitriteEffluent = mean(nitrite(endOfCycleIndexMature));
+nitrateEffluent = mean(nitrate(endOfCycleIndexMature));
+substrateEffluent = mean(substrate(endOfCycleIndexMature));
+phosphateEffluent = mean(phosphate(endOfCycleIndexMature));
+
+ammoniumInfluent = ammonium(1);
+substrateInfluent = substrate(1);
+phosphateInfluent = phosphate(1);
+
+nRemoval = 1 -(ammoniumEffluent + nitriteEffluent + nitrateEffluent)/...
+    ammoniumInfluent;
+codRemoval = 1 - (substrateEffluent)/substrateInfluent;
+pRemoval = 1 - (phosphateEffluent)/phosphateInfluent;
+
+disp(sprintf('nRemoval = %0.1f', nRemoval *100));
+disp(sprintf('++ %0.1f by SND', nRemoval *100*fSnd));
+disp(sprintf('++ %0.1f by AND\n', nRemoval *100*fAnd));
+disp(sprintf('codRemoval = %0.1f\n', codRemoval *100));
+disp(sprintf('pRemoval = %0.1f\n', pRemoval *100));
+
+
+

@@ -1,0 +1,3 @@
+function l3 = lDiffusionConsumption(dc, lc, cs, cx, ms, y, umax, ks)
+
+l3 = dc./lc.*cs./(cx.*(-ms-(1./y).*umax.*(cs./(cs+ks))));

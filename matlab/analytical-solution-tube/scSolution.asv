@@ -1,0 +1,83 @@
+% scSolution - analytical solution for the steady state of
+% tube reactor
+
+% parameteres
+Y_SX = 1.5; %yield [kgCOD-S/kgCOD-X]
+rho_X = 2.5e5; %yield [kgCOD-S/kgCOD-X]
+kDet = 1e-15;
+Qv = 3.53; %volumetric flow [m^3/day]
+eta = 86.4; %dynamic viscosity of water [kg/(m.day)]
+L = 1; %distance from tube entrance [m]
+Ds = 1.992e-4; %diffusivity of oxygen in water [m^2/day]
+mu_max = 11.28; %maximum specific growth rate [day^-1]
+R = 0.013; %radius of tube [m]
+C_S_bulk = 8e-3; %bulk concentration of oxygen [kgO/m^3]
+
+% % constants used in equation
+% C1 = C_S_bulk;
+% C2 = 2 * Y_SX * rho_X * kDet * Qv * eta / pi * ( sqrt(pi * L / Qv / Ds) + 2/Ds );
+% C3 = -Y_SX * mu_max * rho_X * R^2 / 4 / Ds;
+% C4 = 8 * kDet * Qv * eta / mu_max / pi;
+% 
+% % build the equation
+% syms x;
+% eq = C1 + C2/(x^2) + C3*log(1+C4/x^4);
+% 
+% R_f = solve(eq,x)
+
+% syms R_f2 R_delta2 C_S_surf;
+% eq1 = mu_max/2*(R_delta2-R_f2)*R_f2 - 4*kDet*Qv*eta/pi;
+% eq2 = C_S_surf - 0.5*Y_SX*mu_max*rho_X/Ds*(R_f2-R_delta2+R^2*0.5*log(R_delta2/R_f2));
+% eq3 = sqrt(4*Qv*Ds/pi/L)*(C_S_bulk-C_S_surf) - 0.5*Y_SX*mu_max*rho_X*(R_delta2-R_f2);
+
+%obtaining Rf from a given delta
+% syms R_f delta;
+% eq1 = 0.5*mu_max*((R_f+delta)^2-R_f^2)/R_f - 4*kDet*Qv*eta/pi/R_f^3;
+% f_R_f = solve(eq1, R_f);
+% 
+% delta_vals = 0:R/1000:R;
+% 
+% colors = {'b-', 'k-', 'k:'};
+% 
+% figure(1);
+% for i = 1:length(f_R_f)
+%    plot(delta_vals, subs(f_R_f(i),{delta},{delta_vals}), colors{i});
+%    hold on;
+% end;
+% hrect = rectangle('Position', [0, 0, R, R]);
+% plot(delta_vals, delta_vals, 'r-');
+% hold off;     
+% %set(gca, 'XLim', [0 R]);
+% xlabel('delta [m]');
+% ylabel('R_f [m]');
+% axis equal
+
+%solving 1 for R_f
+
+% R_delta = 0:R/10000:R;
+% R_f_a = sqrt(R_delta.^2 + sqrt(R_delta.^4-32*kDet*Qv*eta/mu_max)/2);  
+% R_f_b = sqrt(R_delta.^2 - sqrt(R_delta.^4-32*kDet*Qv*eta/mu_max)/2);  
+% figure(1);
+% subplot(1,2,1);
+% plot(R_delta, R_f_a, 'b-', R_delta, R_f_b, 'r-', R_delta, R_delta, 'k-');
+% xlabel('R_{\delta} [m]');
+% ylabel('R_f [m]');
+% subplot(1,2,2);
+% plot(R_delta-R_f_b, R_f_b, 'r-');
+% xlabel('{\delta} [m]');
+% ylabel('R_f [m]');
+
+
+%Solving 1 for R_delta
+R_f = 0:R/10000:R;
+R_delta = sqrt(R_delta.^2 + sqrt(R_delta.^4-32*kDet*Qv*eta/mu_max)/2);  
+R_f_b = sqrt(R_delta.^2 - sqrt(R_delta.^4-32*kDet*Qv*eta/mu_max)/2);  
+figure(1);
+subplot(1,2,1);
+plot(R_delta, R_f_a, 'b-', R_delta, R_f_b, 'r-', R_delta, R_delta, 'k-');
+xlabel('R_{\delta} [m]');
+ylabel('R_f [m]');
+subplot(1,2,2);
+plot(R_delta-R_f_b, R_f_b, 'r-');
+xlabel('{\delta} [m]');
+ylabel('R_f [m]');

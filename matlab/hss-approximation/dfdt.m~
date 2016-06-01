@@ -1,0 +1,28 @@
+function dfdt = dfdt(t, f, r, x)
+
+% Model parameter values.
+Rs = 0.01;                  % 1/h
+rho = 3000;                 % g/L
+Ds = 5.76e-6;               % um^2/h
+h = 0.05 * 2000;            % um
+Q = Ds / h^2;
+S0 = 1e-6;                  % g/L
+Ys = 0.45;                  % dimensionless
+muMax = 0.1;                % 1/h
+c = 0.3;                    % dimensionless
+Ks = 3.5e-5;                % g/L
+k = Ks / S0;
+Rdet = 1e-5;                % g/(um^3 * h)
+lambda = 0.03;              % 1/h
+
+% Calculate dimensionless lump parameters.
+Alpha = (Rs * rho) / (2 * Q * S0);
+Beta = (rho * muMax) / (2 * Q * S0 * Ys);
+Gamma = (Rdet * h) / (muMax * rho);
+Delta = (c * Rs) / muMax;
+Epsilon = lambda / muMax;
+
+s = (Alpha * f - Beta) * r/h + 1;
+
+dfdt = lambda * (1 - f) - c * Rs * f;
+drdt = -1 * Rdet / rho * r + (1/2) * (

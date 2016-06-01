@@ -1,0 +1,16 @@
+% scDrawFig1_phototrophic
+
+dirName = 'E:\jxavier\Sloughing detection\data';
+fileName = '/r01l1i11days.txt';
+
+growthCurveData = readGrowthCurve([dirName fileName]);
+
+
+figure(1);
+set(1, 'Position', [256   308   512   384], 'PaperPositionMode', 'manual');
+for i = 1:9,
+    subplot(3, 6, i);
+    plot(growthCurveData.time, growthCurveData.sensor(i).value, 'k-');
+    xlabel('time [day]');
+    ylabel('X (absorbance)');
+end;

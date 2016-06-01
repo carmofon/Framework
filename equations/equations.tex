@@ -1,0 +1,368 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{ABM tumor model equations}
+\author{Will Chang}
+\date{2010.05.10}
+
+\begin{document}
+
+
+	\maketitle
+	Equations for the agent-based tumor model.
+
+	\section{model}
+		\subsection{Assumptions}
+			\begin{flushleft}
+				\begin{itemize}
+					\item No oxygen dependence. \\
+					\item Cell growth depends on growth signal with half-saturation constant \(K_s\). \\
+					\item Bulk concentration of growth signal is constant. \\
+					\item Diffusion of solute (growth signal) is physically modeled. \\
+					\item Cells grow to a maximum radius then divide. \\
+					\item Begin with only cheaters, with probability of mutation to cooperator upon division equal to \(\lambda\). There is no mutation from cooperator to cheater. \\
+					\item Cooperators produce growth signal at a rate \(R_s\) and cost \(c\). \\
+					\item Cells at edges of tumor detach from the main tumor mass at rate proportional to \(r^2\) where r is the distance to the center of the simulation space. This simulates detachment of cells to form metastases and death due to distance from the initial location of tumorigenesis with favorable growth conditions. Detachment coefficient is the constant \(R_{det}\). \\
+					\item Cells push each other so as not to overlap. \\
+				\end{itemize}
+			\end{flushleft}
+
+		\subsection{Stoichiometry table.}
+			\begin{center}
+				\renewcommand{\arraystretch}{2}
+				\begin{tabular} {c || c | c | c | c}
+
+					Reaction & S & X (cooperator) & Y (cheater) & Rate \\
+					\hline
+	
+					X growth &
+						\( -1/Y_s \) & 1 && \(\mu_{max}  \frac {S} {K_s + S} X \) \\
+	
+					Y growth & 
+						\( -1/Y_s \) && 1 & \(\mu_{max} \frac {S} {K_s + S} Y \) \\
+		
+					S produce & 
+						1 & \( -c \) && \( R_sX\)\\
+		
+					Mutate &&
+						\( 1 \) & \( -1 \) & \( \lambda Y\)\\
+						
+				\end{tabular}
+			\end{center}
+%			(! I took the brakets in all [S]. You were using brakets sometimes but not always. This way it is more consistent. !)
+
+			Erosion speed function (dimensionality is \([LT^{-1}]\)):
+%			(!The speed function does not include X or Y!)
+
+			\begin{equation}
+				V_{ero} = \frac{-R_{det}r^2}{\rho} 
+			\end{equation}
+
+		\subsection{Time derivatives } %(!including erosion!)
+			\begin{center}
+				\begin{equation}
+					\frac{ \delta X }{\delta t} = \mu_{max} \frac{S}{K_s + S} X -  \frac{R_{det}2 \pi r^3}{\rho}  X - R_scX + \lambda Y
+				\end{equation}
+	
+				\begin{equation}
+					\frac{\delta Y}{\delta t} = \mu_{max} \frac{S}{K_s + S} Y -\frac{R_{det}2 \pi r^3}{\rho}  Y - \lambda Y
+				\end{equation}
+
+				\begin{equation}
+					\frac{\delta S}{\delta t} = D \nabla ^ 2S - \frac{\mu_{max}}{Y_s}\frac{S}{K_s+S}(X+Y)+R_sX
+				\end{equation}
+
+			\end{center}
+
+		\subsection{Nondimensionalization}
+
+			\subsubsection{Parameters}
+			\begin{center}
+				\renewcommand{\arraystretch}{2}
+				\begin{tabular}{c | c | c }
+					\(\mu_{max}\) & max growth rate & \([T^{-1}]\) \\
+					\(c\) & signal production cost & dimensionless \\
+					\(D\) & signal diffusion coeff. & \([L^2T^{-1}]\) \\
+					\(\rho\) & biomass density & \([ML^{-2}]\) if 2D, \([ML^{-3}]\) if 3D \\
+					\(h\) & boundary layer thickness & \([L]\) \\
+					\(S_0\) & bulk signal concentration & \([ML^{-3}]\) \\
+					\(K_s\) & growth with signal half-saturation constant & \([ML^{-3}]\) \\
+					\(\lambda\) & mutation rate & \([T^{-1}]\) \\
+					\(R_s\) & signal production rate coeff. & \([T^{-1}]\) \\
+					\(R_{det}\) & detachment rate coeff. & \([ML^{-3}T{-1}]\) (r-square detachment)\\
+					\(Y_s\) & yield of biomass produced per signal consumed & dimensionless \\
+					\(Q\) & ext. mass transfer rate \( \equiv D/h^2 \) & \([T^{-1}]\) \\
+				\end{tabular}
+				
+			\end{center}
+
+		\subsubsection{Variables} 
+			\begin{center}
+				\(\hat{X} = X / \rho =fM/\rho = \pi h^2 \hat{r}^2f\) \\
+				\(\hat{Y} = Y / \rho  =\pi\hat{r}^2(1-f)\)\\
+				\(\hat{S} = S / S_0\) \\
+				\(\hat{r} = r / h\) \\
+				\(\hat{t} = t * \mu_{max}\)
+			\end{center}
+
+		\subsubsection{Time derivatives:}
+		%(! I changed a bit here - the equation is now in dimensionless form. Each term starts with a dimensionless group of parameters. I also corrected the erosion term!)
+			\begin{equation}
+				\frac{1}{\mu_{max} \rho} \frac{\delta X}{\delta t} = 
+					 \frac{\delta \hat{X}}{\delta \hat{t}} = 
+					\frac{\hat{S}}{K_s / S_0 + \hat{S}}\hat{X} 
+					- \frac{2 \pi R_{det} h^3}{\mu_{max}}\hat{r}^3\hat{X} 
+					-  \frac{R_s c}{\mu_{max}} \hat{X} 
+					+ \frac{\rho \lambda}{\mu_{max}} \hat{Y}	
+			\end{equation}
+			%(!See previous equation and change this one accordingly!)
+			\begin{equation}
+				\frac{1}{\mu_{max}\rho}\frac{\delta Y}{\delta t} = \frac{\delta\hat{Y}}{\delta\hat{t}} = 
+					\frac{\hat{S}}{K_s / S_0 + \hat{S}}\hat{Y} 
+					- \frac{2\pi R_{det} h^3}{\mu_{max}}\hat{r}^3\hat{Y} 
+					- \rho \lambda \hat{Y}
+			\end{equation} 
+				
+			\begin{equation}
+				\frac{1}{S_0 \mu_{max}} \frac{\delta S}{\delta t} =
+					 \frac{\delta \hat{S}}{\delta \hat{t}} =
+					 \frac{D}{h^2 \mu_{max}} \nabla^2\hat{S} 
+					- \frac{ \rho}{Y_s S_0}\frac{\hat{S}}{K_s/S_0 + \hat{S}}(\hat{X}+\hat{Y})
+					+ \frac{\rho R_s}{S_0 \mu_{max}} \hat{X}
+			\end{equation}
+				
+	\section{Homogeneous steady-state approximation}
+		\subsection{Assumptions}
+			\begin{flushleft}
+				\begin{itemize}
+					\item Cooperator and cheater biomass are well-mixed and constant across the tumor radius. \\
+					\item Growth signal concentration is constant across the tumor. \\
+					\item Steady-state tumor radius reflects tumor size at which growth rate is exactly equal to detachment rate. \\
+				\end{itemize}
+			\end{flushleft}
+		\subsection{Setup}
+			\begin{center}
+				Total mass of tumor:
+				\(M = X + Y = \rho \pi r^2\) \\
+				Fraction of cooperators 
+				%(Note: the symbol "\(\equiv\)" should be used to state a definition, rather than the equality symbol "="):
+				\(f \equiv X/M\) \\
+				\(r^* \textrm{ is total tumor radius at steady state}\) 
+				\begin{equation*} 
+					\mu = \mu_{max} \frac{S}{S + K_s} \, \sim
+					\begin{cases}
+						S\frac{\mu_{max}}{K_s} &\textrm{if } S \ll K_s \\
+						\mu_{max} &\textrm{if } S \gg K_s \\
+					\end{cases} 
+				\end{equation*}
+				\[k = \frac{K_s}{S_0}\]
+			%(! \(\mu_max\) was missing!)
+			\end{center}
+			\begin{equation}
+				\frac{dS}{dt} = 0 = R_s\rho f - \frac{\mu}{Y_s}\rho + \frac{D_s}{hr}(S_0 - S)
+				\label{hss:dSdt}
+			\end{equation}
+			%(!No need to write \(\mu(S)\) as the function \(\mu\) was defined above!)
+
+			Nondimensionalized:
+			\begin{equation}
+				\frac{1}{\mu_{max}S_0}\frac{dS}{dt} = \frac{d\hat{S}}{d\hat{t}} = 0
+					= \frac{R_s\rho}{\mu_{max}S_0}f
+						- \frac{\hat{S}}{k + \hat{S}}\frac{\rho}{S_0Y_s}
+						+ \frac{2D_S}{\mu_{max}h^2\hat{r}}(1-\hat{S})
+				\label{hss:nd:dSdt}
+			\end{equation}
+
+			\begin{equation}
+				\frac{dM}{dt} = 0 = \mu M - R_{det}2\pi r^3 - cfMR_s %\textrm{ (!this last term was missing!)}
+				\label{hss:dMdt}
+			\end{equation}
+
+			Nondimensionalized:
+			\begin{equation}
+				\frac{1}{\mu_{max}\pi\rho h^2}\frac{dM}{dt} = \frac{d\hat{r}^2}{d\hat{t}} = 0
+					= \frac{\hat{S}}{k + \hat{S}}\hat{r}^2 
+						- \frac{R_{det}2 h}{\mu_{max}\rho}\hat{r}^3 
+						- \frac{cR_s}{\mu_{max}}f\hat{r}^2
+				\label{hss:nd:dMdt}
+			\end{equation}
+
+			\begin{equation}
+				\frac{dX}{dt} = 0 = \mu fM - R_{det}2\pi r^3 f - cfMR_s + \lambda (1-f)M
+				\label{hss:dXdt}
+			\end{equation}
+
+			Nondimensionalized:
+			\begin{equation}
+				\frac{1}{\mu_{max}\rho\pi h^2 }\frac{dX}{dt} = \frac{d\hat{r}^2f}{d\hat{t}} = 0
+					= \frac{\hat{S}}{k+\hat{S}}f\hat{r}^2
+						- \frac{R_{det}2 h}{\mu_{max}\rho}f\hat{r}^3
+						- \frac{c R_s}{\mu_{max}}f\hat{r}^2
+						+ \frac{\lambda}{\mu_{max}}(1-f)\hat{r}^2
+				\label{hss:nd:dXdt}
+			\end{equation}
+			
+%		(! All seems good up to here. The term \(- cfMR_s \) was missing from equation \ref{hss:dMdt}. Because of that,
+%		the solutions below are not correct. I suggest you do the following next:
+%		\begin{enumerate}
+%			 \item Solve equation \ref{hss:dSdt} to get \(S^*\) as a function of\((r, f)\) - this should be a quadratic equation
+%			 \item Substitute  \(S^*\) in \ref{hss:dMdt} to get \(r^*\) as a function of \(f\) 
+%			 \item Plot \(r^*\) as a function of \(f\) 
+% 		\end{enumerate}
+%		Let's talk again after that!)
+
+		\subsection{Solutions}
+			\begin{flushleft}
+				(For: \(f^*,\hat{s}^*,\hat{r}^*\))
+				From \ref{hss:nd:dSdt}:
+				
+				\begin{equation}
+					0 = -\hat{s}^* + (\frac{Rs\rho}{2QS_0}f\hat{r}
+						- \frac{\rho\mu_{max}}{2S_0Y_s}\hat{r} + 1 - k)\hat{s}^*
+						+ k(\frac{R_s\rho}{2QS_0}f\hat{r} + 1)				
+				\end{equation}
+				
+				Define
+				\[\alpha \equiv \frac{R_s\rho}{2QS_0} \textrm{[dimensionless]}\]
+				
+				Which can be regarded as the normalized ratio of signal synthesis to external transfer.
+				
+				\[\beta \equiv \frac{\rho\mu_{max}}{2S_0Y_sQ} \textrm{[dimensionless]}\]
+				
+				Which can be regarded as the normalized ratio of signal consumption to external transfer.
+				
+				Then
+				
+				\begin{equation}
+					0 = -\hat{s}^* + (\alpha f\hat{r} - \beta\hat{r} + 1 - k)\hat{s}^* + k(\alpha f\hat{r} + 1)
+				\end{equation}
+				
+				With the help of Sage:
+				
+				\begin{equation}
+					\hat{s}^* = \frac{(\alpha f - \beta)\hat{r}
+						 - k
+						 + 1
+						 \pm \sqrt{
+						 	(\alpha^2f^2 - 2\alpha\beta f + \beta^2)\hat{r}^2
+							+ 2[(\alpha f - \beta)k + \alpha f - \beta]\hat{r}
+							+ k^2 + 2k + 1
+						}}{2}
+				\end{equation}
+				
+				But everything under the square root is just:
+				
+				\[ [(\alpha f - \beta)\hat{r} + (k + 1)]^2 \]
+				
+				And thus:
+				
+				\begin{equation}
+					\hat{s}^* = 
+						\begin{cases}
+							-k \\
+							(\alpha f - \beta)\hat{r} + 1
+						\end{cases}			
+				\end{equation}
+				
+				of which only the latter is relevant.
+				
+				And so:
+				
+				\begin{equation}
+					\frac{\hat{s}^*}{k + \hat{s}^*} = 1 - \frac{k}{(\alpha f - \beta)\hat{r} + k+ 1}
+					\label{hss:nd:sks}
+				\end{equation}
+				
+				From \ref{hss:nd:dMdt}:
+				
+				\begin{equation}
+					\frac{d\hat{r}}{d\hat{t}} = 
+						-\frac{R_{det}h}{\mu_{max}\rho}\hat{r}^2
+						+ \frac{1}{2}\frac{\hat{s}}{k + \hat{s}}\hat{r}
+						- \frac{cR_s}{2\mu_{max}}f\hat{r}
+				\end{equation}
+				
+				(Note that this precludes the trivial solution where \(\hat{r} = 0\).)
+				
+				From \ref{hss:nd:dXdt}:
+				
+				\begin{align}
+					\frac{d\hat{X}}{d\hat{t}}	&= \frac{1}{\mu_{max}\pi\rho h^2}\frac{dX}{dt} \\
+										&= \frac{df\hat{r}^2}{d\hat{t}} \\
+										&= 2f\hat{r}\frac{d\hat{r}}{d\hat{t}} + \hat{r}^2\frac{df}{d\hat{t}} \\
+										&= 2f\hat{r}(-\frac{R_{det}h}{\mu_{max}\rho}\hat{r}^2
+											+ \frac{1}{2}\frac{\hat{s}}{k + \hat{s}}\hat{r}
+											- \frac{cR_s}{2\mu_{max}}f\hat{r})
+											+ \hat{r}^2\frac{df}{d\hat{t}} \\
+										&= \frac{\hat{s}}{k+\hat{s}}f\hat{r}^2
+											- \frac{R_{det}2 h}{\mu_{max}\rho}f\hat{r}^3
+											- \frac{c R_s}{\mu_{max}}f\hat{r}^2
+											+ \frac{\lambda}{\mu_{max}}(1-f)\hat{r}^2
+				\end{align}
+				
+				Therefore:
+				
+				\begin{equation}
+					\frac{df}{d\hat{t}} = \frac{cR_s}{\mu_{max}}f^2
+						+ (\frac{\lambda}{\mu_{max}} - \frac{cR_s}{\mu_{max}})f
+						+ \frac{\lambda}{\mu_{max}}
+				\end{equation}
+				
+				Define:
+				
+				\[ \gamma \equiv \frac{R_{det}h}{\mu_{max}\rho} \textrm{[dimensionless]} \]
+				
+				\[ \delta \equiv \frac{cR_s}{\mu_{max}} \textrm{[dimensionless]} \]
+				
+				\[ \epsilon \equiv \frac{\lambda}{\mu_{max}} \textrm{[dimensionless]} \]
+				
+				Then:
+				
+				\begin{equation}
+					\frac{d\hat{r}}{d\hat{t}} = -\gamma\hat{r}^2 + \frac{1}{2}(\frac{\hat{s}}{k + \hat{s}}\hat{r} - \delta f\hat{r})
+					\label{hss:nd:drdt}
+				\end{equation}
+				
+				\begin{equation}
+					\frac{df}{d\hat{t}} = \frac{1}{\mu_{max}}(\lambda - cR_sf)(1 - f)
+					\label{hss:nd:dfdt}
+				\end{equation}
+			\end{flushleft}
+
+		\subsection{Fixed points and stability analysis.}
+			\begin{flushleft}	
+				
+				The fixed points of \( f \) are found at:
+				
+				\begin{equation}
+					f =
+						\begin{cases}
+							1 \\
+							\lambda / cR_s
+						\end{cases}
+				\end{equation}
+				
+				Although the fixed points of \(f\) are constant for a given \(\lambda / cR_s\) ratio, half time to steady state seems to scale inversely with \(\lambda\) judging by numerical simulations.
+			\end{flushleft}
+			
+		\subsection{Parameter lumping and interpretations}
+			\begin{flushleft}
+				
+			\end{flushleft}
+
+		\subsection{Limitations}
+			\begin{flushleft}
+				
+				In reality, \(\frac{df}{dt}\) will be dependent on both \(\lambda\) and the [fraction of produced signal received by cooperators/segregation index/relatedness]. \(\frac{dX}{dt}\) will be nonlinear for \(X\).
+				
+			\end{flushleft}
+
+\end{document}  
